@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    image: php:8.1-fpm
+    container_name: symfony-api
+    volumes:
+      - .:/var/www/html
+    networks:
+      - symfony
+    ports:
+      - "8000:8000"
+
+  db:
+    image: mysql:5.7
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: api_database
+    ports:
+      - "3306:3306"
+    networks:
+      - symfony
+
+networks:
+  symfony:
+    driver: bridge
