@@ -1,5 +1,4 @@
 <?php
-
 namespace App\DataFixtures;
 
 use App\Entity\Contact;
@@ -28,6 +27,6 @@ class AppFixtures extends Fixture
         $subscription->setEndDate(new \DateTime('2024-12-31'));
         $manager->persist($subscription);
 
-        $manager->flush(); 
+        $manager->flush();
     }
 }

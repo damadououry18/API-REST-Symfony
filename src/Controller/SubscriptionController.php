@@ -10,8 +10,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 
-
-
 class SubscriptionController extends AbstractController
 {
     #[Route('/subscription', name: 'app_subscription')]
