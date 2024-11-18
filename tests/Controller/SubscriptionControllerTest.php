@@ -65,4 +65,5 @@ class SubscriptionControllerTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(204);
     }
+    
 }
