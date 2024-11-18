@@ -30,7 +30,7 @@ class SubscriptionController extends AbstractController
         $subscriptions = $subscriptionRepo->findBy(['contact' => $idContact]);
         return $this->json($subscriptions);
     }
-    
+     
    // POST /subscription
    #[Route('/subscription', methods: ['POST'])]
     public function createSubscription(Request $request, EntityManagerInterface $em): JsonResponse

@@ -19,7 +19,7 @@ class SubscriptionControllerTest extends WebTestCase
     {
         $client = static::createClient();
 
-        $client->request(
+        $client->request( 
             'POST',
             '/subscription',
             [],

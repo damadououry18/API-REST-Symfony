@@ -12,7 +12,7 @@ class Subscription
     #[ORM\Column(type: "integer")]
     private $id;
 
-    #[ORM\ManyToOne(targetEntity: Contact::class)]
+    #[ORM\ManyToOne(targetEntity: Contact::class)] 
     #[ORM\JoinColumn(nullable: false)]
     private $contact;
 
