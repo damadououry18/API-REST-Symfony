@@ -4,7 +4,7 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: App\Repository\SubscriptionRepository::class)]
 class Subscription
 {
     #[ORM\Id]
@@ -26,6 +26,8 @@ class Subscription
     #[ORM\Column(type: "datetime")]
     private $endDate;
 
+    // Getters et setters
+    
     public function getId(): ?int
     {
         return $this->id;

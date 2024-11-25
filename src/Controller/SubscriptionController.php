@@ -3,6 +3,9 @@
 namespace App\Controller;
 use App\Entity\Subscription;
 use App\Repository\SubscriptionRepository;
+use App\Entity\Contact;
+use App\Repository\ContactRepository;
+
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,7 +15,9 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class SubscriptionController extends AbstractController
 {
-    #[Route('/subscription', name: 'app_subscription')]
+    private $contactRepository;
+
+     #[Route('/', name: 'app_index')]
     public function index(): JsonResponse
     {
         return $this->json([
@@ -20,6 +25,17 @@ class SubscriptionController extends AbstractController
             'path' => 'src/Controller/SubscriptionController.php',
         ]);
     }
+  /*
+    #[Route('/subscription', name: 'app_subscription')]
+    public function subscription(): JsonResponse
+    {
+        return $this->json([
+            'message' => 'Welcome to your new controller subcription!',
+            'path' => 'src/Controller/SubscriptionController.php',
+        ]);
+    
+    }
+   */
 
   // GET /subscription/{idContact} 
     #[Route('/subscription/{idContact}', methods: ['GET'])]
@@ -29,7 +45,13 @@ class SubscriptionController extends AbstractController
         return $this->json($subscriptions);
     }
      
+    public function __construct(ContactRepository $contactRepository)
+    {
+        $this->contactRepository = $contactRepository;
+    }
+
    // POST /subscription
+  
    #[Route('/subscription', methods: ['POST'])]
     public function createSubscription(Request $request, EntityManagerInterface $em): JsonResponse
     {
@@ -52,12 +74,12 @@ class SubscriptionController extends AbstractController
     }
 
     // PUT /subscription/{idSubscription}
-     #[Route('/subscription/{idSubscription}', methods: ['PUT'])]
-    public function updateSubscription(int $idSubscription, Request $request, EntityManagerInterface $em): JsonResponse
+     #[Route('/subscription/{id}', methods: ['PUT'])]
+    public function updateSubscription(int $id, Request $request, EntityManagerInterface $em): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        $subscription = $em->getRepository(Subscription::class)->find($idSubscription);
+        $subscription = $em->getRepository(Subscription::class)->find($id);
         if (!$subscription) {
             return $this->json(['error' => 'Subscription not found'], 404);
         }
@@ -70,10 +92,14 @@ class SubscriptionController extends AbstractController
     }
 
     //DELETE /subscription/{idSubscription}
-    #[Route('/subscription/{idSubscription}', methods: ['DELETE'])]
-    public function deleteSubscription(int $idSubscription, EntityManagerInterface $em): JsonResponse
+    #[Route('/subscription/{id}', methods: ['DELETE'])]
+    /* public function deleteSubscription(int $id, EntityManagerInterface $em): JsonResponse */
+    public function deleteSubscription(int $id, SubscriptionRepository $em): JsonResponse
     {
-        $subscription = $em->getRepository(Subscription::class)->find($idSubscription);
+        $subscription = $em->findBy(['subscription' => $id]);
+
+        /* $subscription = $em->getRepository(Subscription::class)->find($id); */
+
         if (!$subscription) {
             return $this->json(['error' => 'Subscription not found'], 404);
         }

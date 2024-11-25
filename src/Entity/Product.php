@@ -15,6 +15,8 @@ class Product
     #[ORM\Column(type: "string", length: 255)]
     private $label;
 
+    // Getters et setters
+    
     public function getId(): ?int
     {
         return $this->id;

@@ -2,8 +2,12 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ContactRepository;
 
 #[ORM\Entity]
+/**
+ * @ORM\Entity(repositoryClass=ContactRepository::class)
+ */
 class Contact
 { 
     
@@ -17,6 +21,8 @@ class Contact
 
     #[ORM\Column(type: "string", length: 255)]
     private $firstname;
+
+  // Getters et setters
 
     public function getId(): ?int
     {
