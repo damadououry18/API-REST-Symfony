@@ -5,6 +5,7 @@ use App\Entity\Subscription;
 use App\Repository\SubscriptionRepository;
 use App\Entity\Contact;
 use App\Repository\ContactRepository;
+use App\Entity\Product;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,64 +52,115 @@ class SubscriptionController extends AbstractController
     }
 
    // POST /subscription
-  
    #[Route('/subscription', methods: ['POST'])]
     public function createSubscription(Request $request, EntityManagerInterface $em): JsonResponse
     {
+        // Décoder les données JSON
         $data = json_decode($request->getContent(), true);
 
-        $subscription = new Subscription();
-        $subscription->setBeginDate(new \DateTime($data['beginDate']));
-        $subscription->setEndDate(new \DateTime($data['endDate']));
+        // Vérifiez si le JSON est valide
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->json(['error' => 'Invalid JSON: ' . json_last_error_msg()], 400);
+        }
 
-        // Associer contact et produit
-        $contact = $em->getRepository(Contact::class)->find($data['contact']);
-        $product = $em->getRepository(Product::class)->find($data['product']);
-        $subscription->setContact($contact);
-        $subscription->setProduct($product);
+        // Vérifiez que les champs nécessaires sont présents
+        if (!isset($data['contact_id'], $data['product_id'], $data['beginDate'], $data['endDate'])) {
+            return $this->json([
+                'error' => 'Missing required fields: contact_id, product_id, beginDate, endDate'
+            ], 400);
+        }
 
-        $em->persist($subscription);
-        $em->flush();
+        try {
+            // Créez une nouvelle instance de Subscription
+            $subscription = new Subscription();
+            $subscription->setBeginDate(new \DateTime($data['beginDate']));
+            $subscription->setEndDate(new \DateTime($data['endDate']));
 
-        return $this->json($subscription, 201);
+            // Récupérez et associez le Contact
+            $contact = $em->getRepository(Contact::class)->find($data['contact_id']);
+            if (!$contact) {
+                return $this->json(['error' => 'Contact not found.'], 404);
+            }
+
+            // Récupérez et associez le Product
+            $product = $em->getRepository(Product::class)->find($data['product_id']);
+            if (!$product) {
+                return $this->json(['error' => 'Product not found.'], 404);
+            }
+
+            $subscription->setContact($contact);
+            $subscription->setProduct($product);
+
+            // Sauvegarder l'abonnement
+            $em->persist($subscription);
+            $em->flush();
+
+            // Retourner l'abonnement créé
+            return $this->json([
+                'message' => 'Subscription created successfully.',
+                'subscription' => $subscription
+            ], 201);
+
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
     }
 
     // PUT /subscription/{idSubscription}
-     #[Route('/subscription/{id}', methods: ['PUT'])]
-    public function updateSubscription(int $id, Request $request, EntityManagerInterface $em): JsonResponse
+
+    #[Route('/subscription/{idSubscription}', methods: ['PUT'])]
+    public function updateSubscription(int $idSubscription, Request $request, EntityManagerInterface $em, SubscriptionRepository $subscriptionRepo): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 
-        $subscription = $em->getRepository(Subscription::class)->find($id);
-        if (!$subscription) {
+        // Vérifiez si le JSON est valide
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->json(['error' => 'Invalid JSON: ' . json_last_error_msg()], 400);
+        }
+
+        // Vérifiez que les champs nécessaires sont présents
+        if (!isset($data['beginDate'], $data['endDate'])) {
+            return $this->json([
+                'error' => 'Missing required fields: beginDate, endDate'
+            ], 400);
+        }
+
+        // Récupérez l'abonnement à mettre à jour 
+        if (!$subscription = $subscriptionRepo->find($idSubscription)) {
             return $this->json(['error' => 'Subscription not found'], 404);
         }
 
-        $subscription->setBeginDate(new \DateTime($data['beginDate']));
-        $subscription->setEndDate(new \DateTime($data['endDate']));
-        $em->flush();
+        try {
+            // Mettre à jour les données
+            $subscription->setBeginDate(new \DateTime($data['beginDate']));
+            $subscription->setEndDate(new \DateTime($data['endDate']));
 
-        return $this->json($subscription);
+            // Enregistrez les modifications
+            $em->flush();
+
+            return $this->json($subscription, 200);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+        }
     }
 
     //DELETE /subscription/{idSubscription}
-    #[Route('/subscription/{id}', methods: ['DELETE'])]
-    /* public function deleteSubscription(int $id, EntityManagerInterface $em): JsonResponse */
-    public function deleteSubscription(int $id, SubscriptionRepository $em): JsonResponse
+    #[Route('/subscription/{idSubscription}', methods: ['DELETE'])]
+    public function deleteSubscription(int $idSubscription, EntityManagerInterface $em, SubscriptionRepository $subscriptionRepo): JsonResponse
     {
-        $subscription = $em->findBy(['subscription' => $id]);
+        try {
 
-        /* $subscription = $em->getRepository(Subscription::class)->find($id); */
-
-        if (!$subscription) {
-            return $this->json(['error' => 'Subscription not found'], 404);
+            if (!$subscription = $subscriptionRepo->find($idSubscription)) {
+                return $this->json(['error' => 'Subscription not found'], 404);
+            }
+    
+            $em->remove($subscription);
+            $em->flush();
+    
+            return $this->json(['message' => 'Subscription deleted']);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
         }
-
-        $em->remove($subscription);
-        $em->flush();
-
-        return $this->json(['message' => 'Subscription deleted']);
     }
-
-
+    
 }

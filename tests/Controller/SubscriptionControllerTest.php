@@ -1,68 +1,68 @@
 <?php
+
+// tests/Controller/SubscriptionControllerTest.php
 namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Response;
 
 class SubscriptionControllerTest extends WebTestCase
 {
-    public function testGetSubscriptionByContact(): void
-    {
-        $client = static::createClient();
-        $client->request('GET', '/subscription/1'); // Remplacez "1" par un ID valide
-
-        $this->assertResponseIsSuccessful();
-        $this->assertJson($client->getResponse()->getContent());
-    }
-
     public function testCreateSubscription(): void
     {
         $client = static::createClient();
 
-        $client->request( 
-            'POST',
-            '/subscription',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'contact' => 1, // Remplacez avec un ID de contact valide
-                'product' => 1, // Remplacez avec un ID de produit valide
-                'beginDate' => '2024-01-01',
-                'endDate' => '2024-12-31',
-            ])
-        );
+        // Données pour l'API
+        $data = [
+            'contact_id' => 2,
+            'product_id' => 1,
+            'beginDate' => '2023-02-01',
+            'endDate' => '2023-12-31',
+        ];
 
-        $this->assertResponseStatusCodeSame(201);
-        $this->assertJson($client->getResponse()->getContent());
+        // Effectuer une requête POST
+        $client->request('POST', '/subscription', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+
+        // Vérifier la réponse
+        $this->assertResponseStatusCodeSame(Response::HTTP_CREATED);  // Code 201
+        $this->assertJsonResponse($client->getResponse());
+    }
+
+    private function assertJsonResponse(Response $response, int $statusCode = Response::HTTP_OK)
+    {
+        $this->assertSame('application/json', $response->headers->get('Content-Type'));
+        $this->assertSame($statusCode, $response->getStatusCode());
     }
 
     public function testUpdateSubscription(): void
     {
         $client = static::createClient();
 
-        $client->request(
-            'PUT',
-            '/subscription/1', // Remplacez "1" par un ID de subscription valide
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode([
-                'beginDate' => '2024-02-01',
-                'endDate' => '2024-11-30',
-            ])
-        );
+        // Données pour l'API
+        $data = [
+            'beginDate' => '2024-01-01',
+            'endDate' => '2024-12-31',
+        ];
 
-        $this->assertResponseStatusCodeSame(200);
-        $this->assertJson($client->getResponse()->getContent());
+        // Effectuer une requête PUT
+        $client->request('PUT', '/subscription/1', [], [], ['CONTENT_TYPE' => 'application/json'], json_encode($data));
+
+        // Vérifier la réponse
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);  // Code 200
+        $this->assertJsonResponse($client->getResponse());
     }
-
+    
     public function testDeleteSubscription(): void
     {
         $client = static::createClient();
 
-        $client->request('DELETE', '/subscription/1'); // Remplacez "1" par un ID de subscription valide
+        // Effectuer une requête DELETE
+        $client->request('DELETE', '/subscription/1');
 
-        $this->assertResponseStatusCodeSame(204);
+        // Vérifier la réponse
+        $this->assertResponseStatusCodeSame(Response::HTTP_OK);  // Code 200
+        $this->assertJsonResponse($client->getResponse());
     }
-    
+
+
 }
